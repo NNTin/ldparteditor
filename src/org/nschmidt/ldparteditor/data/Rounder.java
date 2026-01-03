@@ -97,10 +97,15 @@ public enum Rounder {
             for (CTabItem t : w.getTabFolder().getItems()) {
                 if (datFile.equals(((CompositeTab) t).getState().getFileNameObj())) {
                     // We need to update the text now, otherwise the caret selection can't be restored.
-                    st.setText(datFile.getText());
-                    st.setSelection(st.getOffsetAtLine(currentCaretLine) + Math.min(st.getLine(currentCaretLine).length(), characterDelta));
-                    ((CompositeTab) t).parseForErrorAndHints();
-                    ((CompositeTab) t).getTextComposite().redraw();
+                    CompositeTab tab = (CompositeTab) t;
+                    StyledText textComposite = tab.getTextComposite();
+                    final int safeCaretLine = Math.min(currentCaretLine, textComposite.getLineCount() - 1);
+                    tab.getState().setSync(true);
+                    textComposite.setText(datFile.getText());
+                    textComposite.setSelection(textComposite.getOffsetAtLine(safeCaretLine) + Math.min(textComposite.getLine(safeCaretLine).length(), characterDelta));
+                    tab.getState().setSync(false);
+                    tab.parseForErrorAndHints();
+                    textComposite.redraw();
                     break;
                 }
             }
